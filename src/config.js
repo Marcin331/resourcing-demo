@@ -1,2 +1,2 @@
 export const CLIENT_NAME = "NovaPharma";
-export const DEMO_PASSWORD = "pharma2025";
+export const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD ?? "";

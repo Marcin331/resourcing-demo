@@ -223,12 +223,15 @@ export const scenarioDefaults = {
 // ─────────────────────────────────────────────────────────────────────────────
 // FTE Resource Requirements for NP-MM-401 Acceleration
 // ─────────────────────────────────────────────────────────────────────────────
+// Base requirements at 12-week acceleration. Use calcScaledFteRequirements(weeks)
+// in the Scenario Planner to get week-scaled values. Chosen so that gaps are
+// non-zero at 8w, fully solvable at 12w (AI recommendation), and unsolvable at 16w.
 export const fteRequirements = [
-  { role: 'Clinical Operations', required: 8, available: 5, gap: 3 },
-  { role: 'Biostatistics', required: 3, available: 2, gap: 1 },
-  { role: 'Medical Affairs', required: 2, available: 2, gap: 0 },
-  { role: 'Regulatory Affairs', required: 2, available: 1, gap: 1 },
-  { role: 'Data Management', required: 3, available: 2, gap: 1 },
+  { role: 'Clinical Operations', required: 10, available: 6, gap: 4 },
+  { role: 'Biostatistics',       required: 4,  available: 2, gap: 2 },
+  { role: 'Medical Affairs',     required: 3,  available: 3, gap: 0 },
+  { role: 'Regulatory Affairs',  required: 3,  available: 1, gap: 2 },
+  { role: 'Data Management',     required: 4,  available: 2, gap: 2 },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,4 +326,102 @@ GenVara Phase 3 interim data (GV-CAR19, rrMM) released today. 78% ORR / 14m PFS 
 Full scenario plan available in the Workforce Planning tool. CMO briefing scheduled for Thursday.
 
 — Alex Morgan, Programme Director`,
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Scenario Planner — Function-level Reallocation Pool
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Describes which roles in each deprioritised study have FTEs available
+ * for reallocation, and the per-FTE phase slippage cost for that study.
+ * phaseLabel must match the `label` field in the study's `phases` array.
+ */
+export const reallocationPool = [
+  {
+    studyId: 'NP-HEM-215',
+    studyShortName: 'NP-HEM-215',
+    roles: [
+      {
+        role: 'Clinical Operations',
+        maxFTE: 3,
+        phaseImpacts: [
+          { phaseLabel: 'Recruitment',     weeksPerFTE: 3 },
+          { phaseLabel: 'Site Monitoring', weeksPerFTE: 2 },
+        ],
+      },
+      {
+        role: 'Data Management',
+        maxFTE: 2,
+        phaseImpacts: [
+          { phaseLabel: 'Site Monitoring', weeksPerFTE: 2 },
+        ],
+      },
+    ],
+  },
+  {
+    studyId: 'NP-MM-318',
+    studyShortName: 'NP-MM-318',
+    roles: [
+      {
+        role: 'Clinical Operations',
+        maxFTE: 1,
+        phaseImpacts: [
+          { phaseLabel: 'Recruitment', weeksPerFTE: 3 },
+        ],
+      },
+      {
+        role: 'Regulatory Affairs',
+        maxFTE: 2,
+        phaseImpacts: [
+          { phaseLabel: 'Data Management', weeksPerFTE: 3 },
+        ],
+      },
+      {
+        role: 'Data Management',
+        maxFTE: 1,
+        phaseImpacts: [
+          { phaseLabel: 'Data Management', weeksPerFTE: 4 },
+        ],
+      },
+      {
+        role: 'Biostatistics',
+        maxFTE: 1,
+        phaseImpacts: [
+          { phaseLabel: 'Data Management', weeksPerFTE: 3 },
+        ],
+      },
+    ],
+  },
+]
+
+/**
+ * AI-recommended default reallocation — pre-populates the stepper grid.
+ * At 12w covers 9 of 10 FTE gaps from the pool; bench covers the last Biostat FTE.
+ */
+export const recommendedReallocation = {
+  'NP-HEM-215': { 'Clinical Operations': 3, 'Data Management': 2 },
+  'NP-MM-318':  { 'Clinical Operations': 1, 'Regulatory Affairs': 2, 'Biostatistics': 1 },
+}
+
+/**
+ * Unfilled / bench FTEs available per role — can be assigned to NP-MM-401
+ * without pulling from any active trial. Total = 3 FTE (insufficient alone
+ * to close the 12w gap of 10, so users must also reallocate from trials).
+ */
+export const unstaffedFTEPool = {
+  'Clinical Operations': 1,
+  'Biostatistics': 1,
+  'Medical Affairs': 0,
+  'Regulatory Affairs': 0,
+  'Data Management': 1,
+}
+
+/**
+ * AI-recommended bench allocation — assigns the 1 remaining Biostat FTE
+ * from the unfilled pool, closing the full 12w gap when combined with
+ * recommendedReallocation.
+ */
+export const recommendedUnstaffedAllocation = {
+  'Biostatistics': 1,
 }
